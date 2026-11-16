@@ -26,23 +26,21 @@
   };
 
   const touchLayout = matchMedia('(max-width: 700px), (pointer: coarse)');
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const motionButton = document.querySelector('.motion-toggle');
-  let motionPreference;
-  try { motionPreference = localStorage.getItem('portfolio-motion'); } catch { /* Storage is optional. */ }
+  const motionStorageKey = 'portfolio-motion-paused';
+  let motionPaused = false;
+  try { motionPaused = localStorage.getItem(motionStorageKey) === 'true'; } catch { /* Storage is optional. */ }
   const updateMotion = () => {
-    const enabled = motionPreference ? motionPreference === 'on' : touchLayout.matches || !reducedMotion.matches;
+    const enabled = !motionPaused;
     document.documentElement.dataset.motion = enabled ? 'on' : 'off';
     motionButton.setAttribute('aria-pressed', String(enabled));
   };
   motionButton.hidden = false;
   motionButton.addEventListener('click', () => {
-    motionPreference = document.documentElement.dataset.motion === 'on' ? 'off' : 'on';
-    try { localStorage.setItem('portfolio-motion', motionPreference); } catch { /* Keep the setting in memory. */ }
+    motionPaused = !motionPaused;
+    try { localStorage.setItem(motionStorageKey, String(motionPaused)); } catch { /* Keep the setting in memory. */ }
     updateMotion();
   });
-  touchLayout.addEventListener('change', updateMotion);
-  reducedMotion.addEventListener('change', updateMotion);
   updateMotion();
 
   const videoDialog = document.querySelector('.video-dialog');
@@ -183,48 +181,46 @@
       setTimeout(() => { wheelLocked = false; }, 650);
     }, { passive: false });
     let gesture;
-    let suppressTap = false;
-    list.addEventListener('pointerdown', event => {
-      if (!event.isPrimary) return;
-      suppressTap = false;
-      if (event.pointerType === 'touch') gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, dragging: false };
-    });
-    list.addEventListener('pointermove', event => {
-      if (gesture?.id !== event.pointerId) return;
-      const dx = event.clientX - gesture.x;
-      const dy = event.clientY - gesture.y;
-      if (!gesture.dragging) {
-        if (Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx)) { gesture = null; return; }
-        if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
-        gesture.dragging = true;
-        suppressTap = true;
-        list.setPointerCapture(event.pointerId);
-        list.classList.add('is-dragging');
-      }
-      if (document.documentElement.dataset.motion !== 'off') {
-        const limit = list.clientWidth * .75;
-        list.style.setProperty('--drag-x', `${Math.max(-limit, Math.min(dx, limit))}px`);
-      }
-    });
-    const endGesture = event => {
-      if (gesture?.id !== event.pointerId) return;
-      const dx = event.clientX - gesture.x;
-      const shouldMove = gesture.dragging && event.type === 'pointerup' && Math.abs(dx) >= 45;
+    const resetGesture = () => {
       gesture = null;
       list.classList.remove('is-dragging');
       list.style.removeProperty('--drag-x');
-      if (shouldMove) move(dx < 0 ? 1 : -1);
     };
-    list.addEventListener('pointerup', endGesture);
-    list.addEventListener('pointercancel', endGesture);
-    list.addEventListener('lostpointercapture', event => {
-      if (event.target === list) endGesture(event);
-    });
-    list.addEventListener('click', event => {
-      if (!suppressTap || !event.detail) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-    }, true);
+    list.addEventListener('touchstart', event => {
+      resetGesture();
+      if (event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      gesture = { id: touch.identifier, x: touch.clientX, y: touch.clientY, dragging: false };
+    }, { passive: true });
+    list.addEventListener('touchmove', event => {
+      if (!gesture) return;
+      if (event.touches.length !== 1) { resetGesture(); return; }
+      const touch = event.touches[0];
+      if (touch.identifier !== gesture.id) return;
+      const dx = touch.clientX - gesture.x;
+      const dy = touch.clientY - gesture.y;
+      if (!gesture.dragging) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < 8) return;
+        if (Math.abs(dx) <= Math.abs(dy) * 1.2) { resetGesture(); return; }
+        gesture.dragging = true;
+        list.classList.add('is-dragging');
+      }
+      if (event.cancelable) event.preventDefault();
+      if (!motionPaused) {
+        const limit = list.clientWidth * .75;
+        list.style.setProperty('--drag-x', `${Math.max(-limit, Math.min(dx, limit))}px`);
+      }
+    }, { passive: false });
+    list.addEventListener('touchend', event => {
+      if (!gesture) return;
+      const touch = Array.from(event.changedTouches).find(item => item.identifier === gesture.id);
+      if (!touch) return;
+      const dx = touch.clientX - gesture.x;
+      const shouldMove = gesture.dragging && Math.abs(dx) >= 45;
+      resetGesture();
+      if (shouldMove) move(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    list.addEventListener('touchcancel', resetGesture, { passive: true });
     update();
   }
 
