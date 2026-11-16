@@ -8,9 +8,9 @@
   <title>Портфолио — Идрис</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23171919'/%3E%3Cpath d='M20 47V17h15c8 0 12 4 12 11s-5 11-13 11h-6v8zm8-15h6c4 0 6-1 6-4s-2-4-6-4h-6z' fill='%23f1f1ec'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="styles.css?v=4">
-  <link rel="stylesheet" href="services.css?v=3">
+  <link rel="stylesheet" href="services.css?v=4">
   <script>document.documentElement.classList.add('js'); if (location.hostname.endsWith('.github.io')) document.documentElement.classList.add('static-host');</script>
-  <script src="content.js?v=3" defer></script>
+  <script src="content.js?v=4" defer></script>
   <script src="script.js?v=7" defer></script>
 </head>
 <body>
@@ -23,7 +23,7 @@
       </a>
       <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="Открыть меню"><span></span><span></span></button>
       <nav class="nav" id="main-nav" aria-label="Основная навигация">
-        <a href="#about">Обо мне</a><a href="#work">Работы</a><a href="#reviews">Отзывы</a><a class="nav-contact" href="#contact">Связаться <span aria-hidden="true">↗</span></a>
+        <a href="#about">Обо мне</a><a href="#work">Работы</a><a href="#reviews">Отзывы</a><a href="#faq">Вопросы</a><a class="nav-contact" href="#contact">Связаться <span aria-hidden="true">↗</span></a>
       </nav>
     </header>
 
@@ -46,10 +46,10 @@
       <section class="section about wrap" id="about" aria-labelledby="about-title">
         <div class="section-kicker"><span>01 / ОБО МНЕ</span><span class="kicker-line"></span><span>НЕМНОГО БЛИЖЕ</span></div>
         <div class="about-layout">
-          <h2 id="about-title">Приятно<br><span class="muted-title">познакомиться.</span></h2>
+          <h2 id="about-title">Скучный сайт<br><span class="muted-title">молча теряет клиентов.</span></h2>
           <div class="about-copy">
-            <p class="about-lead" data-about-lead>У каждой работы есть история. Здесь можно рассказать свою.</p>
-            <p data-about-text>Поделитесь тем, чем вы занимаетесь, что вас вдохновляет и какие проекты вам особенно интересны. Несколько искренних слов помогут людям узнать вас лучше.</p>
+            <p class="about-lead" data-about-lead>Каждая секунда на сайте стоит денег. Пока вы выбираете дизайн сайта, клиент уже ушёл тому, у кого страница выглядит дороже.</p>
+            <p data-about-text>Моя задача — создать выразительный и удобный сайт, который вызывает доверие, помогает разобраться в вашем предложении и побуждает человека остаться и оставить заявку.</p>
             <div class="about-signature"><span class="signature-dot">✳</span><span><strong data-person-name>Идрис</strong><small>АВТОР ПОРТФОЛИО</small></span></div>
           </div>
         </div>
@@ -78,6 +78,19 @@
             <div class="reviews-content"><div class="quote-card" id="reviews-list"><p class="reviews-empty">Пока отзывов нет. Будьте первым!</p></div>
               <form class="review-form" id="review-form"><h3>Оставить отзыв</h3><label>Ваше имя<input name="author" maxlength="80" required autocomplete="name"></label><label>Ваш отзыв<textarea name="text" maxlength="1000" rows="4" required></textarea></label><button class="button button-light" type="submit">Отправить отзыв <span aria-hidden="true">↗</span></button><p class="review-status" role="status" aria-live="polite"></p></form>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section faq wrap" id="faq" aria-labelledby="faq-title">
+        <div class="section-kicker"><span>ВОПРОСЫ И ОТВЕТЫ</span><span class="kicker-line"></span><span>ПЕРЕД НАЧАЛОМ</span></div>
+        <div class="faq-layout"><div class="faq-heading"><h2 id="faq-title">Частые<br><span class="muted-title">вопросы.</span></h2><p>Не нашли ответ? Напишите мне — обсудим вашу задачу.</p><a href="https://t.me/Idriscode" class="work-contact">Задать вопрос <span aria-hidden="true">↗</span></a></div>
+          <div class="faq-list">
+            <details><summary>Сколько стоит создание сайта?<span aria-hidden="true"></span></summary><p>Стоимость зависит от задачи, количества страниц и нужных функций. Обсудим детали проекта, после чего я предложу подходящий вариант.</p></details>
+            <details><summary>Как проходит оплата?<span aria-hidden="true"></span></summary><p>Формат и этапы оплаты согласуем до начала работы, исходя из объёма проекта.</p></details>
+            <details><summary>Сколько времени займёт работа?<span aria-hidden="true"></span></summary><p>Срок зависит от сложности сайта и готовности материалов. После обсуждения задачи определим ориентир по времени.</p></details>
+            <details><summary>Что нужно для начала?<span aria-hidden="true"></span></summary><p>Расскажите о вашем деле, целях сайта и примерах, которые вам нравятся. Если есть тексты, фотографии или фирменный стиль, их тоже можно прислать.</p></details>
+            <details><summary>Можно ли внести правки?<span aria-hidden="true"></span></summary><p>Да, обсудим ваши замечания и порядок внесения изменений при согласовании проекта.</p></details>
           </div>
         </div>
       </section>
