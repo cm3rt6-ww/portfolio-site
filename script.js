@@ -1,4 +1,21 @@
 (() => {
+  // Start every visit with motion enabled. Old browser settings must not freeze the site.
+  let motionPaused = false;
+  const motionButton = document.querySelector('.motion-toggle');
+  const updateMotion = () => {
+    document.documentElement.dataset.motion = motionPaused ? 'off' : 'on';
+    motionButton?.setAttribute('aria-pressed', String(!motionPaused));
+    if (motionButton) motionButton.title = motionPaused ? 'Включить анимации' : 'Остановить анимации до обновления страницы';
+  };
+  if (motionButton) {
+    motionButton.hidden = false;
+    motionButton.addEventListener('click', () => {
+      motionPaused = !motionPaused;
+      updateMotion();
+    });
+  }
+  updateMotion();
+
   const data = window.PORTFOLIO_CONTENT;
   if (!data || typeof data !== 'object') return;
   const clean = value => typeof value === 'string' ? value.trim() : '';
@@ -26,22 +43,6 @@
   };
 
   const touchLayout = matchMedia('(max-width: 700px), (pointer: coarse)');
-  const motionButton = document.querySelector('.motion-toggle');
-  const motionStorageKey = 'portfolio-motion-paused';
-  let motionPaused = false;
-  try { motionPaused = localStorage.getItem(motionStorageKey) === 'true'; } catch { /* Storage is optional. */ }
-  const updateMotion = () => {
-    const enabled = !motionPaused;
-    document.documentElement.dataset.motion = enabled ? 'on' : 'off';
-    motionButton.setAttribute('aria-pressed', String(enabled));
-  };
-  motionButton.hidden = false;
-  motionButton.addEventListener('click', () => {
-    motionPaused = !motionPaused;
-    try { localStorage.setItem(motionStorageKey, String(motionPaused)); } catch { /* Keep the setting in memory. */ }
-    updateMotion();
-  });
-  updateMotion();
 
   const videoDialog = document.querySelector('.video-dialog');
   const player = videoDialog.querySelector('video');

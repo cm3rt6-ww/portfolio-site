@@ -24,13 +24,29 @@ button.project-image{width:100%;padding:0;text-align:left;cursor:pointer;color:i
 .review-form input,.review-form textarea{display:block;width:100%;margin-top:8px;padding:13px;background:#171b19;border:1px solid #505952;color:#f1f1ed;font:inherit;resize:vertical}
 .review-form button{border:0;cursor:pointer;margin-top:5px}.review-form button:disabled{opacity:.6;cursor:wait}
 .review-status{min-height:1.5em;color:#c3cac3;font-size:12px;line-height:1.5;margin:14px 0 0}
-/* Slow orbital movement keeps the artwork ambient. */
-.orbit-a{animation:orbit-a 24s linear infinite}
-.orbit-b{animation:orbit-b 32s linear infinite}
+/* CSS motion also runs before scripts load, on touch screens and after resizing. */
+.orbit{will-change:transform;backface-visibility:hidden;pointer-events:none}
+.orbit::after{content:"";position:absolute;left:50%;top:0;width:7px;height:7px;border-radius:50%;background:#dfe8df;box-shadow:0 0 12px #dfe8df80;transform:translate(-50%,-50%)}
+.orbit-a{animation:orbit-a 18s linear infinite}
+.orbit-b{animation:orbit-b 26s linear infinite}
+.orbit-b::after{width:4px;height:4px;opacity:.65}
+.orbit-c{width:81%;height:27%;border-color:#d6e2d69c;animation:orbit-c 20s linear infinite}
+.orbit-c::after{width:6px;height:6px}
 .sphere{animation:sphere-breathe 8s ease-in-out infinite}
-@keyframes orbit-a{from{transform:translate(-50%,-50%) rotate(-29deg)}to{transform:translate(-50%,-50%) rotate(331deg)}}
-@keyframes orbit-b{from{transform:translate(-50%,-50%) rotate(48deg)}to{transform:translate(-50%,-50%) rotate(-312deg)}}
+.sphere-highlight{animation:highlight-drift 7s ease-in-out infinite}
+.art-cross{animation:cross-turn 16s linear infinite}
+.art-cross-b{animation-direction:reverse;animation-duration:22s}
+.hero-copy>.eyebrow{animation:hero-enter .7s ease-out both}
+.hero-copy>h1{animation:hero-enter .8s .1s ease-out both}
+.hero-copy>.hero-description{animation:hero-enter .8s .2s ease-out both}
+.hero-copy>.hero-actions{animation:hero-enter .8s .3s ease-out both}
+@keyframes orbit-a{from{transform:translate3d(-50%,-50%,0) rotate(-29deg)}to{transform:translate3d(-50%,-50%,0) rotate(331deg)}}
+@keyframes orbit-b{from{transform:translate3d(-50%,-50%,0) rotate(48deg)}to{transform:translate3d(-50%,-50%,0) rotate(-312deg)}}
+@keyframes orbit-c{from{transform:translate3d(-50%,-50%,0) rotate(105deg)}to{transform:translate3d(-50%,-50%,0) rotate(-255deg)}}
 @keyframes sphere-breathe{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.035)}}
+@keyframes highlight-drift{0%,100%{opacity:.5;transform:translateY(0) rotate(-27deg)}50%{opacity:1;transform:translateY(12px) rotate(-10deg)}}
+@keyframes cross-turn{to{transform:rotate(360deg)}}
+@keyframes hero-enter{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 :root[data-motion="off"],
 :root[data-motion="off"] *,
 :root[data-motion="off"] *::before,
