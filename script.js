@@ -25,6 +25,41 @@
     return item;
   };
 
+  const touchLayout = matchMedia('(max-width: 700px), (pointer: coarse)');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const motionButton = document.querySelector('.motion-toggle');
+  let motionPreference;
+  try { motionPreference = localStorage.getItem('portfolio-motion'); } catch { /* Storage is optional. */ }
+  const updateMotion = () => {
+    const enabled = motionPreference ? motionPreference === 'on' : touchLayout.matches || !reducedMotion.matches;
+    document.documentElement.dataset.motion = enabled ? 'on' : 'off';
+    motionButton.setAttribute('aria-pressed', String(enabled));
+  };
+  motionButton.hidden = false;
+  motionButton.addEventListener('click', () => {
+    motionPreference = document.documentElement.dataset.motion === 'on' ? 'off' : 'on';
+    try { localStorage.setItem('portfolio-motion', motionPreference); } catch { /* Keep the setting in memory. */ }
+    updateMotion();
+  });
+  touchLayout.addEventListener('change', updateMotion);
+  reducedMotion.addEventListener('change', updateMotion);
+  updateMotion();
+
+  const videoDialog = document.querySelector('.video-dialog');
+  const player = videoDialog.querySelector('video');
+  const touchControls = videoDialog.querySelector('.video-touch-controls');
+  let videoTrigger;
+
+  function openVideo(url, trigger, useTouchPlayer) {
+    videoTrigger = trigger;
+    videoDialog.classList.toggle('touch-player', useTouchPlayer);
+    touchControls.hidden = !useTouchPlayer;
+    player.controls = !useTouchPlayer;
+    player.src = url;
+    videoDialog.showModal();
+    player.play().catch(() => {});
+  }
+
   const list = document.querySelector('#projects-list');
   if (list && Array.isArray(data.projects) && data.projects.length) {
     list.replaceChildren();
@@ -44,7 +79,6 @@
         preview.loop = true;
         preview.preload = 'metadata';
         image.append(preview, el('span', 'project-play', 'СМОТРЕТЬ ↗'));
-        const dialog = document.querySelector('.video-dialog');
         let previewTimer;
         const stopPreview = () => {
           clearTimeout(previewTimer);
@@ -53,9 +87,9 @@
         };
         image.addEventListener('carousel-hide', stopPreview);
         image.addEventListener('pointerenter', event => {
-          if (event.pointerType !== 'mouse' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          if (event.pointerType !== 'mouse' || document.documentElement.dataset.motion === 'off') return;
           previewTimer = setTimeout(() => {
-            if (!dialog.open && !document.hidden) preview.play().catch(() => {});
+            if (!videoDialog.open && !document.hidden) preview.play().catch(() => {});
           }, 700);
         });
         image.addEventListener('pointermove', event => {
@@ -70,12 +104,9 @@
           image.classList.remove('has-pointer');
         });
         document.addEventListener('visibilitychange', () => { if (document.hidden) stopPreview(); });
-        image.addEventListener('click', () => {
+        image.addEventListener('click', event => {
           stopPreview();
-          const player = dialog.querySelector('video');
-          player.src = videoUrl;
-          dialog.showModal();
-          player.play().catch(() => {});
+          openVideo(videoUrl, image, touchLayout.matches || event.pointerType === 'touch');
         });
       }
       if (url) {
@@ -151,24 +182,80 @@
       move((Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX) > 0 ? 1 : -1);
       setTimeout(() => { wheelLocked = false; }, 650);
     }, { passive: false });
-    let touchStart = null;
-    list.addEventListener('touchstart', event => { const touch = event.changedTouches[0]; touchStart = { x: touch.clientX, y: touch.clientY }; }, { passive: true });
-    list.addEventListener('touchend', event => {
-      if (!touchStart) return;
-      const touch = event.changedTouches[0], dx = touch.clientX - touchStart.x, dy = touch.clientY - touchStart.y;
-      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) move(dx < 0 ? 1 : -1);
-      touchStart = null;
-    }, { passive: true });
+    let gesture;
+    let suppressTap = false;
+    list.addEventListener('pointerdown', event => {
+      if (!event.isPrimary) return;
+      suppressTap = false;
+      if (event.pointerType === 'touch') gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, dragging: false };
+    });
+    list.addEventListener('pointermove', event => {
+      if (gesture?.id !== event.pointerId) return;
+      const dx = event.clientX - gesture.x;
+      const dy = event.clientY - gesture.y;
+      if (!gesture.dragging) {
+        if (Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx)) { gesture = null; return; }
+        if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+        gesture.dragging = true;
+        suppressTap = true;
+        list.setPointerCapture(event.pointerId);
+        list.classList.add('is-dragging');
+      }
+      if (document.documentElement.dataset.motion !== 'off') {
+        const limit = list.clientWidth * .75;
+        list.style.setProperty('--drag-x', `${Math.max(-limit, Math.min(dx, limit))}px`);
+      }
+    });
+    const endGesture = event => {
+      if (gesture?.id !== event.pointerId) return;
+      const dx = event.clientX - gesture.x;
+      const shouldMove = gesture.dragging && event.type === 'pointerup' && Math.abs(dx) >= 45;
+      gesture = null;
+      list.classList.remove('is-dragging');
+      list.style.removeProperty('--drag-x');
+      if (shouldMove) move(dx < 0 ? 1 : -1);
+    };
+    list.addEventListener('pointerup', endGesture);
+    list.addEventListener('pointercancel', endGesture);
+    list.addEventListener('lostpointercapture', event => {
+      if (event.target === list) endGesture(event);
+    });
+    list.addEventListener('click', event => {
+      if (!suppressTap || !event.detail) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
     update();
   }
 
-  const videoDialog = document.querySelector('.video-dialog');
-  videoDialog?.querySelector('.video-close').addEventListener('click', () => videoDialog.close());
-  videoDialog?.addEventListener('close', () => {
-    const player = videoDialog.querySelector('video');
+  const playToggle = touchControls.querySelector('.video-play-toggle');
+  const muteToggle = touchControls.querySelector('.video-mute-toggle');
+  const seek = touchControls.querySelector('.video-seek');
+  const updateSeek = () => {
+    const duration = Number.isFinite(player.duration) ? player.duration : 0;
+    seek.disabled = duration === 0;
+    seek.max = duration;
+    seek.value = duration ? player.currentTime : 0;
+  };
+  playToggle.addEventListener('click', () => {
+    if (player.paused) player.play().catch(() => {});
+    else player.pause();
+  });
+  player.addEventListener('play', () => { playToggle.textContent = 'Пауза'; });
+  player.addEventListener('pause', () => { playToggle.textContent = 'Пуск'; });
+  player.addEventListener('ended', () => { playToggle.textContent = 'Пуск'; });
+  muteToggle.addEventListener('click', () => { player.muted = !player.muted; });
+  player.addEventListener('volumechange', () => muteToggle.setAttribute('aria-pressed', String(player.muted)));
+  seek.addEventListener('input', () => { player.currentTime = seek.valueAsNumber; });
+  player.addEventListener('durationchange', updateSeek);
+  player.addEventListener('timeupdate', updateSeek);
+  videoDialog.querySelector('.video-close').addEventListener('click', () => videoDialog.close());
+  videoDialog.addEventListener('close', () => {
     player.pause();
     player.removeAttribute('src');
     player.load();
+    updateSeek();
+    videoTrigger?.focus({ preventScroll: true });
   });
 
   const reviewList = document.querySelector('#reviews-list');

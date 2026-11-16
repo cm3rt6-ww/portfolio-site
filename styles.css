@@ -31,4 +31,54 @@ button.project-image{width:100%;padding:0;text-align:left;cursor:pointer;color:i
 @keyframes orbit-a{from{transform:translate(-50%,-50%) rotate(-29deg)}to{transform:translate(-50%,-50%) rotate(331deg)}}
 @keyframes orbit-b{from{transform:translate(-50%,-50%) rotate(48deg)}to{transform:translate(-50%,-50%) rotate(-312deg)}}
 @keyframes sphere-breathe{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.035)}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+:root[data-motion="off"],
+:root[data-motion="off"] *,
+:root[data-motion="off"] *::before,
+:root[data-motion="off"] *::after {
+  scroll-behavior: auto !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+.motion-toggle {
+  padding: 8px 0;
+  border: 0;
+  color: #c0c7c0;
+  background: none;
+  cursor: pointer;
+}
+.motion-toggle[aria-pressed="true"]::after { content: " · вкл"; }
+.motion-toggle[aria-pressed="false"]::after { content: " · выкл"; }
+
+html:has(.video-dialog.touch-player[open]) { overflow: hidden; }
+.video-dialog.touch-player {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  max-height: none;
+  border: 0;
+  background: #101212;
+}
+.touch-player .video-dialog-inner {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100%;
+  padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+.touch-player video { height: 100%; max-height: none; object-fit: contain; }
+.touch-player .video-close { position: static; justify-self: end; }
+.video-touch-controls:not([hidden]) { display: flex; align-items: center; gap: 12px; padding-top: 6px; }
+.video-touch-controls button, .touch-player .video-close {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: #f0f0eb;
+  cursor: pointer;
+}
+.video-touch-controls button[aria-pressed="true"] { background: #39413a; border-radius: 8px; }
+.video-touch-controls input { flex: 1; min-width: 0; min-height: 44px; accent-color: #e7ebe4; }

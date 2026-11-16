@@ -7,11 +7,11 @@
   <meta name="description" content="Личное портфолио: обо мне, избранные работы, отзывы и контакты.">
   <title>Портфолио — Идрис</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23171919'/%3E%3Cpath d='M20 47V17h15c8 0 12 4 12 11s-5 11-13 11h-6v8zm8-15h6c4 0 6-1 6-4s-2-4-6-4h-6z' fill='%23f1f1ec'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=5">
-  <link rel="stylesheet" href="services.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="services.css?v=5">
   <script>document.documentElement.classList.add('js'); if (location.hostname.endsWith('.github.io')) document.documentElement.classList.add('static-host');</script>
   <script src="content.js?v=5" defer></script>
-  <script src="script.js?v=9" defer></script>
+  <script src="script.js?v=10" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -102,8 +102,18 @@
         </div>
       </section>
     </main>
-    <footer class="footer wrap"><a class="footer-brand" href="#top"><span class="brand-mark" aria-hidden="true">P<span>.</span></span><span data-person-name>Идрис</span></a><span>СОЗДАНО С ВНИМАНИЕМ К ДЕТАЛЯМ</span><a class="to-top" href="#top">НАВЕРХ <span aria-hidden="true">↑</span></a></footer>
+    <footer class="footer wrap"><a class="footer-brand" href="#top"><span class="brand-mark" aria-hidden="true">P<span>.</span></span><span data-person-name>Идрис</span></a><span>СОЗДАНО С ВНИМАНИЕМ К ДЕТАЛЯМ</span><button class="motion-toggle" type="button" aria-pressed="true" hidden>Анимации</button><a class="to-top" href="#top">НАВЕРХ <span aria-hidden="true">↑</span></a></footer>
   </div>
-  <dialog class="video-dialog" aria-label="Видео проекта"><div class="video-dialog-inner"><button class="video-close" type="button" aria-label="Закрыть видео">✕</button><video controls playsinline preload="none"></video></div></dialog>
+  <dialog class="video-dialog" aria-label="Видео проекта">
+    <div class="video-dialog-inner">
+      <button class="video-close" type="button" aria-label="Закрыть видео">✕</button>
+      <video controls playsinline preload="none"></video>
+      <div class="video-touch-controls" hidden>
+        <button class="video-play-toggle" type="button">Пуск</button>
+        <input class="video-seek" type="range" aria-label="Позиция воспроизведения" min="0" max="0" step="any" value="0" disabled>
+        <button class="video-mute-toggle" type="button" aria-pressed="false">Без звука</button>
+      </div>
+    </div>
+  </dialog>
 </body>
 </html>
