@@ -9,3 +9,15 @@
 @media(prefers-reduced-motion:reduce){.js .project-carousel .project-card,.carousel-controls button{transition:none}}
 .static-host #reviews,.static-host .nav a[href="#reviews"]{display:none}
 
+/* Compact transitions and service cards. */
+.hero-foot{border-bottom:0}.about{padding-top:36px}.work{padding-bottom:55px}.static-host .contact{padding-top:42px}
+.service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;border:0;margin-bottom:64px}
+.service-item,.service-item+.service-item,.service-item:nth-child(3),.service-item:nth-child(4){display:grid;grid-template-columns:1fr auto;align-content:start;min-height:200px;padding:27px 30px;border:1px solid #505954;border-radius:24px;background:linear-gradient(145deg,#252b28,#171b19 75%);transition:border-color .25s,transform .25s}
+.service-item:hover{border-color:#a4b0a5;transform:translateY(-3px)}
+.service-symbol{float:none;display:grid;place-items:center;width:46px;height:46px;border:1px solid #49524b;border-radius:14px;background:#2b322e;color:#d4ddd3}
+.service-symbol svg{width:23px;height:23px;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.service-number{align-self:center;color:#879188}.service-item h3{grid-column:1/-1;margin:29px 0 10px;font-size:21px}.service-item p{grid-column:1/-1;max-width:440px;font-size:13px}
+@media(max-width:700px){.about{padding-top:24px}.work{padding-bottom:40px}.static-host .contact{padding-top:30px}.service-grid{gap:12px;margin-bottom:40px}.service-item,.service-item+.service-item,.service-item:nth-child(3),.service-item:nth-child(4){padding:20px;min-height:190px;border-radius:19px}.service-item h3{font-size:17px;margin-top:24px}}
+@media(max-width:430px){.service-grid{grid-template-columns:1fr}.service-item,.service-item+.service-item,.service-item:nth-child(3),.service-item:nth-child(4){min-height:0}.service-item h3{margin-top:20px}}
+@media(prefers-reduced-motion:reduce){.service-item{transition:none}}
+
