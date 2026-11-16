@@ -98,21 +98,22 @@
       image.append(el('span', 'project-number', `${String(index + 1).padStart(2, '0')} / ${String(data.projects.length).padStart(2, '0')}`));
       const info = el('div', 'project-info');
       const details = el('div');
-      details.append(el('div', 'project-category', clean(project.category) || 'ПРОЕКТ'));
+      if (clean(project.category)) details.append(el('div', 'project-category', clean(project.category)));
       const title = el('h3');
       if (url) {
         const titleLink = el('a', '', clean(project.title) || 'Без названия');
         titleLink.href = url;
         title.append(titleLink);
       } else title.textContent = clean(project.title) || 'Без названия';
-      details.append(title, el('p', '', clean(project.description)));
+      details.append(title);
+      if (clean(project.description)) details.append(el('p', '', clean(project.description)));
       info.append(details);
       if (url) {
         const arrow = el('a', 'project-index', '↗');
         arrow.href = url;
         arrow.setAttribute('aria-label', `Открыть проект: ${clean(project.title) || 'без названия'}`);
         info.append(arrow);
-      } else {
+      } else if (!videoUrl || clean(project.category)) {
         const arrow = el('span', 'project-index project-index-muted', '↗');
         arrow.setAttribute('aria-hidden', 'true');
         info.append(arrow);
