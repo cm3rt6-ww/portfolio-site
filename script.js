@@ -232,7 +232,7 @@
       contacts.append(mail);
     }
     if (telegramUrl) {
-      const link = el('a', 'contact-social', 'Telegram');
+      const link = el('a', 'contact-social', 'Написать в Telegram');
       link.href = telegramUrl;
       link.append(el('span', '', '↗'));
       contacts.append(link);
