@@ -6,6 +6,7 @@
     document.documentElement.dataset.motion = motionPaused ? 'off' : 'on';
     motionButton?.setAttribute('aria-pressed', String(!motionPaused));
     if (motionButton) motionButton.title = motionPaused ? 'Включить анимации' : 'Остановить анимации до обновления страницы';
+    document.dispatchEvent(new Event('motion-change'));
   };
   if (motionButton) {
     motionButton.hidden = false;
@@ -60,7 +61,7 @@
     galleryItems.replaceChildren();
     const sources = [{ url: safeUrl(project.video), label: project.mobileVideo ? 'Видео для компьютера' : 'Видео' }];
     if (safeUrl(project.mobileVideo)) sources.push({ url: safeUrl(project.mobileVideo), label: 'Видео для телефона' });
-    const items = sources.flatMap(source => [source, ...[0.25, 0.6].map((time, index) => ({ ...source, time, label: `${source.label} — кадр ${index + 1}` }))]);
+    const items = [...sources];
     (Array.isArray(project.images) ? project.images : []).forEach((image, index) => {
       const url = safeUrl(typeof image === 'string' ? image : image.url);
       if (url) items.push({ url, image: true, label: clean(image.label) || `Фото ${index + 1}` });
@@ -87,8 +88,11 @@
       galleryItems.append(button);
       if (index === 0) button.setAttribute('aria-pressed', 'true');
     });
+    galleryItems.hidden = items.length < 2;
     videoDialog.showModal();
-    select(items[0], galleryItems.firstElementChild);
+    document.dispatchEvent(new Event('preview-update'));
+    const initial = touchLayout.matches && sources.length > 1 ? 1 : 0;
+    select(items[initial], galleryItems.children[initial]);
   }
 
   const list = document.querySelector('#projects-list');
@@ -107,6 +111,8 @@
         preview.src = videoUrl;
         preview.muted = true;
         preview.playsInline = true;
+        preview.setAttribute('playsinline', '');
+        preview.setAttribute('webkit-playsinline', '');
         preview.loop = true;
         preview.preload = 'metadata';
         image.append(preview, el('span', 'project-play', 'СМОТРЕТЬ ↗'));
@@ -201,6 +207,7 @@
         if (position !== 'active') card.querySelector('.project-image')?.dispatchEvent(new Event('carousel-hide'));
       });
       count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(cards.length).padStart(2, '0')}`;
+      document.dispatchEvent(new Event('preview-update'));
     };
     const move = step => { current = (current + step + cards.length) % cards.length; update(); };
     carousel.querySelector('.carousel-prev').addEventListener('click', () => move(-1));
@@ -257,6 +264,30 @@
     update();
   }
 
+  // Touch screens have no hover: animate the visible, active project instead.
+  if (list && 'IntersectionObserver' in window) {
+    let visible = false;
+    const updateTouchPreview = () => {
+      if (!touchLayout.matches) return;
+      list.querySelectorAll('.project-card').forEach(card => {
+        const preview = card.querySelector('.project-preview');
+        if (!preview) return;
+        if (visible && card.dataset.position === 'active' && !videoDialog.open && !document.hidden && !motionPaused) {
+          preview.play().catch(() => {});
+        } else preview.pause();
+      });
+    };
+    const observer = new IntersectionObserver(entries => {
+      visible = entries[0].isIntersecting;
+      updateTouchPreview();
+    }, { threshold: 0.25 });
+    observer.observe(list);
+    document.addEventListener('preview-update', updateTouchPreview);
+    document.addEventListener('motion-change', updateTouchPreview);
+    document.addEventListener('visibilitychange', updateTouchPreview);
+    touchLayout.addEventListener?.('change', updateTouchPreview);
+  }
+
   const playToggle = touchControls.querySelector('.video-play-toggle');
   const muteToggle = touchControls.querySelector('.video-mute-toggle');
   const seek = touchControls.querySelector('.video-seek');
@@ -287,6 +318,7 @@
     player.load();
     updateSeek();
     videoTrigger?.focus({ preventScroll: true });
+    document.dispatchEvent(new Event('preview-update'));
   });
 
   const reviewList = document.querySelector('#reviews-list');

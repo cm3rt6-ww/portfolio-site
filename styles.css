@@ -110,3 +110,11 @@ html:has(.video-dialog.touch-player[open]) { overflow: hidden; }
 .touch-player .video-dialog-inner { grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; }
 .touch-player .video-close { position: absolute; top: max(8px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); }
 .touch-player video, .touch-player .gallery-still { height: 100%; max-height: none; min-height: 0; }
+
+.gallery-items[hidden] { display: none; }
+.gallery-items:not([hidden]) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; }
+.gallery-item { white-space: normal; text-align: center; }
+@media (hover: none) {
+  .button:active, .contact-social:active, .service-item:active { transform: translateY(-3px); }
+  .carousel-controls button:active, .work-contact:active { background: #e8ebe5; color: #171b19; }
+}
