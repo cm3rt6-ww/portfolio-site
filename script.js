@@ -17,6 +17,42 @@
   }
   updateMotion();
 
+  // Drive the hero motion directly so mobile browsers do not drop CSS keyframes.
+  const heroArt = document.querySelector('.hero-art');
+  if (heroArt) {
+    const rings = [...heroArt.querySelectorAll('.orbit')];
+    const sphere = heroArt.querySelector('.sphere');
+    const highlight = heroArt.querySelector('.sphere-highlight');
+    const crosses = [...heroArt.querySelectorAll('.art-cross')];
+    let lastFrame = 0;
+    let elapsed = 0;
+    const animateHero = now => {
+      requestAnimationFrame(animateHero);
+      if (document.hidden || motionPaused) { lastFrame = 0; return; }
+      if (!lastFrame) lastFrame = now;
+      elapsed += Math.min(now - lastFrame, 50);
+      lastFrame = now;
+      const seconds = elapsed / 1000;
+      const rotations = [seconds * 20, -seconds * 360 / 26, -seconds * 360 / 20];
+      rings.forEach((ring, index) => {
+        const base = [-29, 48, 105][index] || 0;
+        ring.style.transform = `translate3d(-50%,-50%,0) rotate(${base + rotations[index]}deg)`;
+      });
+      if (sphere) sphere.style.transform = `translate(-50%,-50%) scale(${1 + .0175 * (1 - Math.cos(seconds * Math.PI / 4)) / 2})`;
+      if (highlight) {
+        const phase = (1 - Math.cos(seconds * Math.PI * 2 / 7)) / 2;
+        highlight.style.opacity = String(.5 + .5 * phase);
+        highlight.style.transform = `translateY(${12 * phase}px) rotate(${-27 + 17 * phase}deg)`;
+      }
+      crosses.forEach((cross, index) => {
+        const direction = index === 1 ? -1 : 1;
+        const duration = index === 1 ? 22 : 16;
+        cross.style.transform = `rotate(${direction * seconds * 360 / duration}deg)`;
+      });
+    };
+    requestAnimationFrame(animateHero);
+  }
+
   const data = window.PORTFOLIO_CONTENT;
   if (!data || typeof data !== 'object') return;
   const clean = value => typeof value === 'string' ? value.trim() : '';

@@ -118,3 +118,6 @@ html:has(.video-dialog.touch-player[open]) { overflow: hidden; }
   .button:active, .contact-social:active, .service-item:active { transform: translateY(-3px); }
   .carousel-controls button:active, .work-contact:active { background: #e8ebe5; color: #171b19; }
 }
+
+/* Hero motion is driven by requestAnimationFrame for consistent mobile playback. */
+.js .hero-art .orbit,.js .hero-art .sphere,.js .hero-art .sphere-highlight,.js .hero-art .art-cross{animation:none}
