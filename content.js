@@ -10,7 +10,7 @@ window.PORTFOLIO_CONTENT = {
   projects: [
     { title: 'Проект 01', category: 'Видеопроект', description: 'Посмотрите видео проекта.', url: '', image: '', video: 'assets/project-01.mp4', placeholder: false },
     { title: 'Проект 02', category: '', description: '', url: '', image: '', video: 'assets/project-02.mp4', placeholder: false },
-    { title: 'Проект 03', category: 'Ваш проект', description: 'Здесь может быть ещё одна ваша работа.', url: '', image: '', placeholder: true }
+    { title: 'Проект 03', category: 'Видеопроект', description: 'Версии для компьютера и телефона.', url: '', image: '', video: 'assets/project-03-desktop.mp4', mobileVideo: 'assets/project-03-mobile.mp4', placeholder: false }
   ],
 
   /* Добавляйте только настоящие отзывы, например:

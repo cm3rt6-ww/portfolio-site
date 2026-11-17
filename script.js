@@ -49,14 +49,46 @@
   const touchControls = videoDialog.querySelector('.video-touch-controls');
   let videoTrigger;
 
-  function openVideo(url, trigger, useTouchPlayer) {
+  const galleryItems = videoDialog.querySelector('.gallery-items');
+  const galleryTitle = videoDialog.querySelector('.gallery-title');
+  function openVideo(project, trigger) {
     videoTrigger = trigger;
-    videoDialog.classList.toggle('touch-player', useTouchPlayer);
-    touchControls.hidden = !useTouchPlayer;
-    player.controls = !useTouchPlayer;
-    player.src = url;
+    videoDialog.classList.toggle('touch-player', touchLayout.matches);
+    touchControls.hidden = true;
+    player.controls = true;
+    galleryTitle.textContent = clean(project.title) || 'Материалы проекта';
+    galleryItems.replaceChildren();
+    const sources = [{ url: safeUrl(project.video), label: project.mobileVideo ? 'Видео для компьютера' : 'Видео' }];
+    if (safeUrl(project.mobileVideo)) sources.push({ url: safeUrl(project.mobileVideo), label: 'Видео для телефона' });
+    const items = sources.flatMap(source => [source, ...[0.25, 0.6].map((time, index) => ({ ...source, time, label: `${source.label} — кадр ${index + 1}` }))]);
+    (Array.isArray(project.images) ? project.images : []).forEach((image, index) => {
+      const url = safeUrl(typeof image === 'string' ? image : image.url);
+      if (url) items.push({ url, image: true, label: clean(image.label) || `Фото ${index + 1}` });
+    });
+    const still = videoDialog.querySelector('.gallery-still');
+    const select = (item, button) => {
+      galleryItems.querySelectorAll('button').forEach(choice => choice.setAttribute('aria-pressed', String(choice === button)));
+      player.pause();
+      player.hidden = !!item.image;
+      still.hidden = !item.image;
+      if (item.image) { still.src = item.url; still.alt = item.label; return; }
+      player.controls = item.time === undefined;
+      player.onloadedmetadata = item.time === undefined ? null : () => {
+        if (Number.isFinite(player.duration)) player.currentTime = player.duration * item.time;
+      };
+      player.src = item.url;
+      player.load();
+      if (item.time === undefined) player.play().catch(() => {});
+    };
+    items.forEach((item, index) => {
+      const button = el('button', 'gallery-item', item.label);
+      button.type = 'button';
+      button.addEventListener('click', () => select(item, button));
+      galleryItems.append(button);
+      if (index === 0) button.setAttribute('aria-pressed', 'true');
+    });
     videoDialog.showModal();
-    player.play().catch(() => {});
+    select(items[0], galleryItems.firstElementChild);
   }
 
   const list = document.querySelector('#projects-list');
@@ -105,7 +137,7 @@
         document.addEventListener('visibilitychange', () => { if (document.hidden) stopPreview(); });
         image.addEventListener('click', event => {
           stopPreview();
-          openVideo(videoUrl, image, touchLayout.matches || event.pointerType === 'touch');
+          openVideo(project, image);
         });
       }
       if (url) {
@@ -249,6 +281,8 @@
   videoDialog.querySelector('.video-close').addEventListener('click', () => videoDialog.close());
   videoDialog.addEventListener('close', () => {
     player.pause();
+    player.onloadedmetadata = null;
+    videoDialog.querySelector('.gallery-still').removeAttribute('src');
     player.removeAttribute('src');
     player.load();
     updateSeek();
