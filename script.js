@@ -226,41 +226,33 @@
       list.classList.remove('is-dragging');
       list.style.removeProperty('--drag-x');
     };
-    list.addEventListener('touchstart', event => {
-      resetGesture();
-      if (event.touches.length !== 1) return;
-      const touch = event.touches[0];
-      gesture = { id: touch.identifier, x: touch.clientX, y: touch.clientY, dragging: false };
-    }, { passive: true });
-    list.addEventListener('touchmove', event => {
-      if (!gesture) return;
-      if (event.touches.length !== 1) { resetGesture(); return; }
-      const touch = event.touches[0];
-      if (touch.identifier !== gesture.id) return;
-      const dx = touch.clientX - gesture.x;
-      const dy = touch.clientY - gesture.y;
+    list.addEventListener('pointerdown', event => {
+      if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
+      gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, dragging: false };
+      list.setPointerCapture?.(event.pointerId);
+    });
+    list.addEventListener('pointermove', event => {
+      if (!gesture || event.pointerId !== gesture.id) return;
+      const dx = event.clientX - gesture.x;
+      const dy = event.clientY - gesture.y;
       if (!gesture.dragging) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) < 8) return;
         if (Math.abs(dx) <= Math.abs(dy) * 1.2) { resetGesture(); return; }
         gesture.dragging = true;
         list.classList.add('is-dragging');
       }
-      if (event.cancelable) event.preventDefault();
-      if (!motionPaused) {
-        const limit = list.clientWidth * .75;
-        list.style.setProperty('--drag-x', `${Math.max(-limit, Math.min(dx, limit))}px`);
-      }
-    }, { passive: false });
-    list.addEventListener('touchend', event => {
-      if (!gesture) return;
-      const touch = Array.from(event.changedTouches).find(item => item.identifier === gesture.id);
-      if (!touch) return;
-      const dx = touch.clientX - gesture.x;
+      const limit = list.clientWidth * .75;
+      list.style.setProperty('--drag-x', `${Math.max(-limit, Math.min(dx, limit))}px`);
+    });
+    list.addEventListener('pointerup', event => {
+      if (!gesture || event.pointerId !== gesture.id) return;
+      const dx = event.clientX - gesture.x;
       const shouldMove = gesture.dragging && Math.abs(dx) >= 45;
       resetGesture();
       if (shouldMove) move(dx < 0 ? 1 : -1);
-    }, { passive: true });
-    list.addEventListener('touchcancel', resetGesture, { passive: true });
+    });
+    list.addEventListener('pointercancel', resetGesture);
+    list.addEventListener('lostpointercapture', resetGesture);
     update();
   }
 
