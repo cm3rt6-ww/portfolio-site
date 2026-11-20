@@ -66,13 +66,6 @@
     window.addEventListener('resize', scheduleContact);
     updateContact();
   }
-  document.querySelector('#contact-form')?.addEventListener('submit', event => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const message = `Здравствуйте! Меня зовут ${form.elements.name.value.trim()}.\n\n${form.elements.message.value.trim()}`;
-    window.open(`https://t.me/Idriscode?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
-  });
-
   const data = window.PORTFOLIO_CONTENT;
   if (!data || typeof data !== 'object') return;
   const clean = value => typeof value === 'string' ? value.trim() : '';
