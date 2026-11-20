@@ -56,6 +56,7 @@
 .curved-tile{position:absolute;left:calc(50% - var(--tile-width) / 2);top:calc(50% - var(--tile-height) / 2);width:var(--tile-width);height:var(--tile-height);padding:0;border:0;background:transparent;transform-style:preserve-3d;cursor:pointer}
 .curved-slice{position:absolute;top:0;height:100%;overflow:hidden;background-color:#2b332e;background-repeat:no-repeat;backface-visibility:hidden}
 .curved-slice:first-child{border-radius:9px 0 0 9px}.curved-slice:last-child{border-radius:0 9px 9px 0}
+.curved-slice:only-child{border-radius:9px}
 .project-picker{display:flex;justify-content:center;gap:8px;overflow-x:auto;padding:6px 0 12px}
 .project-picker-button{flex:0 0 auto;min-height:42px;padding:10px 17px;border:1px solid #48524a;border-radius:100px;background:transparent;color:#abb4ac;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
 .project-picker-button[aria-pressed=true],.project-picker-button:hover{background:#e8ebe5;border-color:#e8ebe5;color:#171b19}
