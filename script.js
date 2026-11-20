@@ -243,7 +243,7 @@
     const bend = 80 * Math.PI / 180;
     const arc = (1.6 - 1 + Math.cos(bend)) / (2 * 1.6 * Math.sin(bend));
     const aspect = 16 / 9;
-    const slices = matchMedia('(max-width: 700px), (pointer: coarse)').matches ? 1 : 16;
+    const slices = 16;
     const measure = () => {
       const width = list.clientWidth;
       const height = list.clientHeight;
@@ -282,7 +282,7 @@
         const share = aspect / slices;
         const angle = (aspect / 2 - (k + .5) * share) * unit;
         part.style.left = `${(aspect - share) / 2 / aspect * 100}%`;
-        part.style.width = `${100 / slices + .3}%`;
+        part.style.width = `${100 / slices + 1}%`;
         part.style.transform = `translateZ(${radius}px) rotateY(${angle}deg) translateZ(${-radius}px)`;
         part.style.backgroundSize = `${slices * 100}% 100%`;
         part.style.backgroundPosition = slices === 1 ? 'center' : `${k / (slices - 1) * 100}% center`;
