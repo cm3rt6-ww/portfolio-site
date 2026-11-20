@@ -25,6 +25,15 @@
     const ink = portal.querySelector('.portal-ink');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
     let raf = 0;
+    let focusX = 180;
+    const measureGlyph = () => {
+      try {
+        const first = glyph.getExtentOfChar(0);
+        focusX = first.x + first.width / 2;
+      } catch (_) { /* Use the fallback until the glyph is ready. */ }
+    };
+    measureGlyph();
+    document.fonts?.ready.then(measureGlyph);
     const draw = () => {
       raf = 0;
       const height = portal.querySelector('.portal-pin').offsetHeight;
@@ -32,11 +41,6 @@
       const progress = reduce.matches || motionPaused ? 0 : Math.max(0, Math.min(1, -portal.getBoundingClientRect().top / travel));
       const t = Math.min(progress / .86, 1);
       const eased = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      let focusX = 180;
-      try {
-        const first = glyph.getExtentOfChar(0);
-        focusX = first.x + first.width / 2;
-      } catch (_) { /* The static opening frame remains usable. */ }
       const scale = Math.exp(Math.log(42) * eased);
       const x = 500 + (focusX - 500) * eased;
       const y = 500;
@@ -46,7 +50,7 @@
     };
     const schedule = () => { if (!raf) raf = requestAnimationFrame(draw); };
     window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
+    window.addEventListener('resize', () => { measureGlyph(); schedule(); });
     document.addEventListener('motion-change', schedule);
     reduce.addEventListener?.('change', schedule);
     draw();
@@ -242,7 +246,7 @@
     const bend = 80 * Math.PI / 180;
     const arc = (1.6 - 1 + Math.cos(bend)) / (2 * 1.6 * Math.sin(bend));
     const aspect = 16 / 9;
-    const slices = 16;
+    const slices = matchMedia('(max-width: 700px), (pointer: coarse)').matches ? 4 : 16;
     const measure = () => {
       const width = list.clientWidth;
       const height = list.clientHeight;
@@ -302,7 +306,7 @@
     }
     const animateBand = time => {
       if (lastFrame && inView && !document.hidden && !motionPaused && !reduced.matches && !hover && !videoDialog.open) {
-        position += Math.min(time - lastFrame, 100) / 4000;
+        position += Math.min(time - lastFrame, 100) / 2800;
         render();
       }
       lastFrame = time;
