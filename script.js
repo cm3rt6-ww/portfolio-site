@@ -146,7 +146,12 @@
 
   const list = document.querySelector('#projects-list');
   const carousel = document.querySelector('.project-carousel');
-  const projects = Array.isArray(data.projects) ? data.projects.filter(project => project && typeof project === 'object') : [];
+  const projectList = Array.isArray(data.projects) ? data.projects.filter(project => project && typeof project === 'object') : [];
+  const projects = [];
+  for (let left = 0, right = projectList.length - 1; left <= right; left++, right--) {
+    projects.push(projectList[left]);
+    if (left !== right) projects.push(projectList[right]);
+  }
   if (list && carousel && projects.length) {
     list.replaceChildren();
     list.classList.add('curved-projects');
