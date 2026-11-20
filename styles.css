@@ -140,3 +140,13 @@ html:has(.video-dialog.touch-player[open]) { overflow: hidden; }
 @media(max-width:700px){.portal-svg{width:100%;margin-left:0}}
 .portal-eyebrow,.portal-support,.portal-button{position:absolute;left:50%;transform:translateX(-50%);margin:0}.portal-eyebrow{top:31%;width:90%}.portal-support{top:65%;width:min(90%,420px)}.portal-button{top:73%;white-space:nowrap}.portal-button:hover{transform:translate(-50%,-2px)}
 @media(max-width:700px){.portal-support{margin:0;max-width:280px}.portal-button{top:75%}}
+
+/* Monochrome portal and the returning orbital sphere. */
+.portal-hero{background:#151818;color:#edf0eb}.portal-topline,.portal-bottom{color:#9da59f}.portal-eyebrow,.portal-support{color:#c4cbc5}.portal-button{background:#e8ebe5;color:#1c201e}.portal-button:hover{background:#fff}.portal-button:focus-visible{outline-color:#fff}
+.portal-sphere-art{position:absolute;left:50%;top:50%;width:min(45vw,540px);aspect-ratio:1;transform:translate(-50%,-50%);opacity:.32;pointer-events:none}
+.portal-sphere{position:absolute;inset:15%;border-radius:50%;background:radial-gradient(circle at 28% 23%,#e1e7df 0%,#929c94 10%,#4b5550 28%,#202825 57%,#090d0b 80%);box-shadow:inset -18px -25px 40px #050706,0 20px 65px #0009,0 0 60px #b4c0b522}
+.portal-orbit{position:absolute;left:5%;top:32%;width:90%;height:36%;border:1px solid #cbd5cc88;border-radius:50%;animation:portal-orbit-spin 22s linear infinite}.portal-orbit-two{left:14%;top:24%;width:72%;height:52%;animation-direction:reverse;animation-duration:30s}
+@keyframes portal-orbit-spin{from{transform:rotate(-30deg)}to{transform:rotate(330deg)}}
+@media(max-width:700px){.portal-sphere-art{width:75vw;opacity:.27}}
+@media(prefers-reduced-motion:reduce){.portal-orbit{animation:none}}
+:root[data-motion=off] .portal-orbit{animation:none}
