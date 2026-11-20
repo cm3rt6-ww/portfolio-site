@@ -59,7 +59,7 @@
       contactFrame = 0;
       const rect = contactSection.getBoundingClientRect();
       const progress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / (window.innerHeight * .7)));
-      contactSection.style.setProperty('--contact-light', progress);
+      document.documentElement.style.setProperty('--contact-light', progress);
     };
     const scheduleContact = () => { if (!contactFrame) contactFrame = requestAnimationFrame(updateContact); };
     window.addEventListener('scroll', scheduleContact, { passive: true });
