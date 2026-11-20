@@ -17,40 +17,39 @@
   }
   updateMotion();
 
-  // Drive the hero motion directly so mobile browsers do not drop CSS keyframes.
-  const heroArt = document.querySelector('.hero-art');
-  if (heroArt) {
-    const rings = [...heroArt.querySelectorAll('.orbit')];
-    const sphere = heroArt.querySelector('.sphere');
-    const highlight = heroArt.querySelector('.sphere-highlight');
-    const crosses = [...heroArt.querySelectorAll('.art-cross')];
-    let lastFrame = 0;
-    let elapsed = 0;
-    const animateHero = now => {
-      requestAnimationFrame(animateHero);
-      if (document.hidden || motionPaused) { lastFrame = 0; return; }
-      if (!lastFrame) lastFrame = now;
-      elapsed += Math.min(now - lastFrame, 50);
-      lastFrame = now;
-      const seconds = elapsed / 1000;
-      const rotations = [seconds * 20, -seconds * 360 / 26, -seconds * 360 / 20];
-      rings.forEach((ring, index) => {
-        const base = [-29, 48, 105][index] || 0;
-        ring.style.transform = `translate3d(-50%,-50%,0) rotate(${base + rotations[index]}deg)`;
-      });
-      if (sphere) sphere.style.transform = `translate(-50%,-50%) scale(${1 + .0175 * (1 - Math.cos(seconds * Math.PI / 4)) / 2})`;
-      if (highlight) {
-        const phase = (1 - Math.cos(seconds * Math.PI * 2 / 7)) / 2;
-        highlight.style.opacity = String(.5 + .5 * phase);
-        highlight.style.transform = `translateY(${12 * phase}px) rotate(${-27 + 17 * phase}deg)`;
-      }
-      crosses.forEach((cross, index) => {
-        const direction = index === 1 ? -1 : 1;
-        const duration = index === 1 ? 22 : 16;
-        cross.style.transform = `rotate(${direction * seconds * 360 / duration}deg)`;
-      });
+  /* Glyph Portal © 2026 Christian Katzmann. MIT. Adapted for this portfolio. */
+  const portal = document.querySelector('.portal-hero');
+  if (portal) {
+    const glyph = portal.querySelector('.portal-glyph');
+    const clip = portal.querySelector('#portal-clip');
+    const ink = portal.querySelector('.portal-ink');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    let raf = 0;
+    const draw = () => {
+      raf = 0;
+      const height = portal.querySelector('.portal-pin').offsetHeight;
+      const travel = Math.max(1, portal.offsetHeight - height);
+      const progress = reduce.matches || motionPaused ? 0 : Math.max(0, Math.min(1, -portal.getBoundingClientRect().top / travel));
+      const t = Math.min(progress / .86, 1);
+      const eased = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      let focusX = 180;
+      try {
+        const first = glyph.getExtentOfChar(0);
+        focusX = first.x + first.width / 2;
+      } catch (_) { /* The static opening frame remains usable. */ }
+      const scale = Math.exp(Math.log(42) * eased);
+      const x = 500 + (focusX - 500) * eased;
+      const y = 500;
+      clip.setAttribute('transform', `translate(500 500) scale(${scale}) translate(${-x} ${-y})`);
+      ink.style.clipPath = t >= 1 ? 'none' : '';
+      portal.style.setProperty('--portal-copy-opacity', String(1 - Math.min(1, progress * 6)));
     };
-    requestAnimationFrame(animateHero);
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(draw); };
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    document.addEventListener('motion-change', schedule);
+    reduce.addEventListener?.('change', schedule);
+    draw();
   }
 
   const data = window.PORTFOLIO_CONTENT;
@@ -132,188 +131,171 @@
   }
 
   const list = document.querySelector('#projects-list');
-  if (list && Array.isArray(data.projects) && data.projects.length) {
-    list.replaceChildren();
-    data.projects.forEach((project, index) => {
-      if (!project || typeof project !== 'object') return;
-      const card = el('article', `project-card${index % 3 === 2 ? ' project-wide' : ''}`);
-      const url = safeUrl(project.url);
-      const videoUrl = safeUrl(project.video);
-      const image = el(videoUrl ? 'button' : url ? 'a' : 'div', `project-image project-visual-${index % 3 + 1}`);
-      if (videoUrl) {
-        image.type = 'button';
-        image.setAttribute('aria-label', `Смотреть видео: ${clean(project.title)}`);
-        const preview = el('video', 'project-preview');
-        preview.src = videoUrl;
-        preview.muted = true;
-        preview.playsInline = true;
-        preview.setAttribute('playsinline', '');
-        preview.setAttribute('webkit-playsinline', '');
-        preview.loop = true;
-        preview.preload = 'metadata';
-        image.append(preview, el('span', 'project-play', 'СМОТРЕТЬ ↗'));
-        let previewTimer;
-        const stopPreview = () => {
-          clearTimeout(previewTimer);
-          preview.pause();
-          if (preview.readyState) preview.currentTime = 0;
-        };
-        image.addEventListener('carousel-hide', stopPreview);
-        image.addEventListener('pointerenter', event => {
-          if (event.pointerType !== 'mouse' || document.documentElement.dataset.motion === 'off') return;
-          previewTimer = setTimeout(() => {
-            if (!videoDialog.open && !document.hidden) preview.play().catch(() => {});
-          }, 700);
-        });
-        image.addEventListener('pointermove', event => {
-          if (event.pointerType !== 'mouse') return;
-          const bounds = image.getBoundingClientRect();
-          image.style.setProperty('--cursor-x', `${event.clientX - bounds.left}px`);
-          image.style.setProperty('--cursor-y', `${event.clientY - bounds.top}px`);
-          image.classList.add('has-pointer');
-        });
-        image.addEventListener('pointerleave', () => {
-          stopPreview();
-          image.classList.remove('has-pointer');
-        });
-        document.addEventListener('visibilitychange', () => { if (document.hidden) stopPreview(); });
-        image.addEventListener('click', event => {
-          stopPreview();
-          openVideo(project, image);
-        });
-      }
-      if (url) {
-        image.href = url;
-        image.setAttribute('aria-label', `Открыть проект: ${clean(project.title) || 'без названия'}`);
-      }
-      const artwork = el('div', 'project-artwork');
-      artwork.setAttribute('aria-hidden', 'true');
-      artwork.append(el('span'), el('i'));
-      if (!videoUrl) image.append(artwork);
-      const imageUrl = safeUrl(project.image);
-      if (imageUrl) {
-        const img = el('img', 'project-photo');
-        img.src = imageUrl;
-        img.alt = clean(project.title) ? `Изображение: ${project.title.trim()}` : 'Изображение проекта';
-        img.loading = 'lazy';
-        image.append(img);
-      }
-      if (project.placeholder) image.append(el('span', 'project-image-label', 'ПРИМЕР ОФОРМЛЕНИЯ'));
-      image.append(el('span', 'project-number', `${String(index + 1).padStart(2, '0')} / ${String(data.projects.length).padStart(2, '0')}`));
-      const info = el('div', 'project-info');
-      const details = el('div');
-      if (clean(project.category)) details.append(el('div', 'project-category', clean(project.category)));
-      const title = el('h3');
-      if (url) {
-        const titleLink = el('a', '', clean(project.title) || 'Без названия');
-        titleLink.href = url;
-        title.append(titleLink);
-      } else title.textContent = clean(project.title) || 'Без названия';
-      details.append(title);
-      if (clean(project.description)) details.append(el('p', '', clean(project.description)));
-      info.append(details);
-      if (url) {
-        const arrow = el('a', 'project-index', '↗');
-        arrow.href = url;
-        arrow.setAttribute('aria-label', `Открыть проект: ${clean(project.title) || 'без названия'}`);
-        info.append(arrow);
-      } else if (!videoUrl || clean(project.category)) {
-        const arrow = el('span', 'project-index project-index-muted', '↗');
-        arrow.setAttribute('aria-hidden', 'true');
-        info.append(arrow);
-      }
-      card.append(image, info);
-      list.append(card);
-    });
-  }
-
   const carousel = document.querySelector('.project-carousel');
-  const cards = list ? [...list.querySelectorAll('.project-card')] : [];
-  if (carousel && cards.length > 1) {
-    let current = 0;
-    let wheelLocked = false;
-    const count = carousel.querySelector('.carousel-count');
-    const update = () => {
-      cards.forEach((card, index) => {
-        const offset = (index - current + cards.length) % cards.length;
-        const position = offset === 0 ? 'active' : offset <= Math.floor(cards.length / 2) ? 'next' : 'previous';
-        card.dataset.position = position;
-        card.inert = position !== 'active';
-        card.setAttribute('aria-hidden', String(position !== 'active'));
-        if (position !== 'active') card.querySelector('.project-image')?.dispatchEvent(new Event('carousel-hide'));
-      });
-      count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(cards.length).padStart(2, '0')}`;
-      document.dispatchEvent(new Event('preview-update'));
+  const projects = Array.isArray(data.projects) ? data.projects.filter(project => project && typeof project === 'object') : [];
+  if (list && carousel && projects.length) {
+    list.replaceChildren();
+    list.classList.add('curved-projects');
+    list.setAttribute('aria-label', 'Лента проектов');
+    const band = el('div', 'curved-band');
+    band.setAttribute('aria-hidden', 'true');
+    list.append(band);
+    const picker = el('div', 'project-picker');
+    picker.setAttribute('aria-label', 'Выбрать проект');
+    const details = el('div', 'curved-details');
+    const controls = carousel.querySelector('.carousel-controls');
+    controls.hidden = true;
+    controls.before(picker, details);
+    const previews = projects.map(project => safeUrl(project.image));
+    let selected = 0;
+    let tiles = [];
+    let columns = 0;
+    let pitch = 0;
+    let radius = 0;
+    let limit = 0;
+    let position = 0;
+    let lastFrame = 0;
+    let inView = !('IntersectionObserver' in window);
+    let hover = false;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    const mod = (number, count) => ((number % count) + count) % count;
+    const showProject = (index, trigger) => {
+      const project = projects[index];
+      const video = safeUrl(project.video);
+      const url = safeUrl(project.url);
+      if (video) openVideo(project, trigger);
+      else if (url) window.location.href = url;
     };
-    const move = step => { current = (current + step + cards.length) % cards.length; update(); };
-    carousel.querySelector('.carousel-prev').addEventListener('click', () => move(-1));
-    carousel.querySelector('.carousel-next').addEventListener('click', () => move(1));
-    list.addEventListener('wheel', event => {
-      if (Math.abs(event.deltaY) < 8 && Math.abs(event.deltaX) < 8) return;
-      event.preventDefault();
-      if (wheelLocked) return;
-      wheelLocked = true;
-      move((Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX) > 0 ? 1 : -1);
-      setTimeout(() => { wheelLocked = false; }, 650);
-    }, { passive: false });
-    let gesture;
-    const resetGesture = () => {
-      gesture = null;
-      list.classList.remove('is-dragging');
-      list.style.removeProperty('--drag-x');
-    };
-    list.addEventListener('pointerdown', event => {
-      if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
-      gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, dragging: false };
-      list.setPointerCapture?.(event.pointerId);
-    });
-    list.addEventListener('pointermove', event => {
-      if (!gesture || event.pointerId !== gesture.id) return;
-      const dx = event.clientX - gesture.x;
-      const dy = event.clientY - gesture.y;
-      if (!gesture.dragging) {
-        if (Math.max(Math.abs(dx), Math.abs(dy)) < 8) return;
-        if (Math.abs(dx) <= Math.abs(dy) * 1.2) { resetGesture(); return; }
-        gesture.dragging = true;
-        list.classList.add('is-dragging');
+    const selectProject = index => {
+      selected = mod(index, projects.length);
+      picker.querySelectorAll('button').forEach((button, i) => button.setAttribute('aria-pressed', String(i === selected)));
+      const project = projects[selected];
+      const title = el('h3', '', clean(project.title) || 'Без названия');
+      const description = el('p', '', clean(project.description));
+      const category = el('span', 'project-category', clean(project.category));
+      details.replaceChildren(category, title, description);
+      if (safeUrl(project.video) || safeUrl(project.url)) {
+        const open = el('button', 'curved-open', safeUrl(project.video) ? 'Смотреть проект ↗' : 'Открыть проект ↗');
+        open.type = 'button';
+        open.addEventListener('click', () => showProject(selected, open));
+        details.append(open);
       }
-      const limit = list.clientWidth * .75;
-      list.style.setProperty('--drag-x', `${Math.max(-limit, Math.min(dx, limit))}px`);
-    });
-    list.addEventListener('pointerup', event => {
-      if (!gesture || event.pointerId !== gesture.id) return;
-      const dx = event.clientX - gesture.x;
-      const shouldMove = gesture.dragging && Math.abs(dx) >= 45;
-      resetGesture();
-      if (shouldMove) move(dx < 0 ? 1 : -1);
-    });
-    list.addEventListener('pointercancel', resetGesture);
-    list.addEventListener('lostpointercapture', resetGesture);
-    update();
-  }
-
-  // Touch screens have no hover: animate the visible, active project instead.
-  if (list && 'IntersectionObserver' in window) {
-    let visible = false;
-    const updateTouchPreview = () => {
-      if (!touchLayout.matches) return;
-      list.querySelectorAll('.project-card').forEach(card => {
-        const preview = card.querySelector('.project-preview');
-        if (!preview) return;
-        if (visible && card.dataset.position === 'active' && !videoDialog.open && !document.hidden && !motionPaused) {
-          preview.play().catch(() => {});
-        } else preview.pause();
-      });
     };
-    const observer = new IntersectionObserver(entries => {
-      visible = entries[0].isIntersecting;
-      updateTouchPreview();
-    }, { threshold: 0.25 });
-    observer.observe(list);
-    document.addEventListener('preview-update', updateTouchPreview);
-    document.addEventListener('motion-change', updateTouchPreview);
-    document.addEventListener('visibilitychange', updateTouchPreview);
-    touchLayout.addEventListener?.('change', updateTouchPreview);
+    projects.forEach((project, index) => {
+      const button = el('button', 'project-picker-button', clean(project.title) || `Проект ${index + 1}`);
+      button.type = 'button';
+      button.addEventListener('click', () => selectProject(index));
+      picker.append(button);
+    });
+    selectProject(0);
+
+    // A single frame from each video is shared by all its facets.
+    projects.forEach((project, index) => {
+      const src = safeUrl(project.video);
+      if (previews[index] || !src) return;
+      const video = document.createElement('video');
+      video.preload = 'auto';
+      video.muted = true;
+      video.playsInline = true;
+      video.addEventListener('loadeddata', () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 640;
+          canvas.height = Math.max(1, Math.round(640 * video.videoHeight / video.videoWidth));
+          canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+          previews[index] = canvas.toDataURL('image/jpeg', .78);
+          tiles.forEach(tile => { if (tile.projectIndex === index) paintTile(tile, index); });
+        } catch (_) { /* External videos can prohibit frame extraction. */ }
+        video.removeAttribute('src');
+        video.load();
+      }, { once: true });
+      video.src = src;
+      video.load();
+    });
+    function paintTile(tile, index) {
+      tile.projectIndex = index;
+      const image = previews[index];
+      tile.element.setAttribute('aria-label', clean(projects[index].title) || `Проект ${index + 1}`);
+      tile.slices.forEach(slice => {
+        slice.style.backgroundImage = image ? `url("${image.replace(/["\\]/g, '\\$&')}")` : '';
+      });
+    }
+    const bend = 80 * Math.PI / 180;
+    const arc = (1.6 - 1 + Math.cos(bend)) / (2 * 1.6 * Math.sin(bend));
+    const aspect = 16 / 9;
+    const slices = 16;
+    const measure = () => {
+      const width = list.clientWidth;
+      const height = list.clientHeight;
+      if (!width || !height) return;
+      const tileHeight = Math.min(height * .52, width * .55 / aspect);
+      radius = width * arc;
+      const unit = tileHeight / radius * 180 / Math.PI;
+      pitch = (aspect + .06) * unit;
+      limit = bend * 180 / Math.PI + aspect * unit / 2;
+      const count = Math.min(60, Math.max(2, Math.ceil(2 * limit / pitch) + 2));
+      list.style.setProperty('--curve-perspective', `${radius * 1.6}px`);
+      list.style.setProperty('--tile-width', `${tileHeight * aspect}px`);
+      list.style.setProperty('--tile-height', `${tileHeight}px`);
+      if (count !== columns) {
+        columns = count;
+        band.replaceChildren();
+        tiles = Array.from({ length: columns }, () => {
+          const element = el('button', 'curved-tile');
+          element.type = 'button';
+          element.tabIndex = -1;
+          const parts = Array.from({ length: slices }, (_, k) => {
+            const part = el('span', 'curved-slice');
+            element.append(part);
+            return part;
+          });
+          const tile = { element, slices: parts, projectIndex: -1 };
+          element.addEventListener('click', () => {
+            selectProject(tile.projectIndex);
+            showProject(tile.projectIndex, picker.children[tile.projectIndex]);
+          });
+          band.append(element);
+          return tile;
+        });
+      }
+      tiles.forEach(tile => tile.slices.forEach((part, k) => {
+        const share = aspect / slices;
+        const angle = (aspect / 2 - (k + .5) * share) * unit;
+        part.style.left = `${(aspect - share) / 2 / aspect * 100}%`;
+        part.style.width = `${100 / slices + .3}%`;
+        part.style.transform = `translateZ(${radius}px) rotateY(${angle}deg) translateZ(${-radius}px)`;
+        part.style.backgroundSize = `${slices * 100}% 100%`;
+        part.style.backgroundPosition = `${k / (slices - 1) * 100}% center`;
+      }));
+      render();
+    };
+    function render() {
+      if (!columns) return;
+      const first = Math.floor(position - columns / 2);
+      tiles.forEach((tile, slot) => {
+        const cell = first + slot;
+        const angle = (cell - position) * pitch;
+        const index = mod(cell, projects.length);
+        if (tile.projectIndex !== index) paintTile(tile, index);
+        tile.element.style.visibility = Math.abs(angle) > limit ? 'hidden' : 'visible';
+        tile.element.style.transform = `translateZ(${radius}px) rotateY(${angle}deg) translateZ(${-radius}px)`;
+      });
+    }
+    const animateBand = time => {
+      if (lastFrame && inView && !document.hidden && !motionPaused && !reduced.matches && !hover && !videoDialog.open) {
+        position += Math.min(time - lastFrame, 100) / 4000;
+        render();
+      }
+      lastFrame = time;
+      requestAnimationFrame(animateBand);
+    };
+    list.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') hover = true; });
+    list.addEventListener('pointerleave', () => { hover = false; });
+    if ('ResizeObserver' in window) new ResizeObserver(measure).observe(list);
+    else window.addEventListener('resize', measure);
+    if ('IntersectionObserver' in window) new IntersectionObserver(entries => { inView = entries[0].isIntersecting; }, { threshold: .1 }).observe(list);
+    measure();
+    requestAnimationFrame(animateBand);
   }
 
   const playToggle = touchControls.querySelector('.video-play-toggle');

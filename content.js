@@ -8,9 +8,9 @@ window.PORTFOLIO_CONTENT = {
   /* Ссылку url и путь к изображению image можно указать позднее.
      Для реальных проектов измените placeholder на false. */
   projects: [
-    { title: 'Проект 01', category: 'Видеопроект', description: 'Посмотрите видео проекта.', url: '', image: '', video: 'assets/project-01.mp4', placeholder: false },
-    { title: 'Проект 02', category: '', description: '', url: '', image: '', video: 'assets/project-02.mp4', placeholder: false },
-    { title: 'Проект 03', category: 'Видеопроект', description: 'Версии для компьютера и телефона.', url: '', image: '', video: 'assets/project-03-desktop.mp4', mobileVideo: 'assets/project-03-mobile.mp4', placeholder: false }
+    { title: 'Проект 01', category: 'Видеопроект', description: 'Посмотрите видео проекта.', url: '', image: 'assets/project-01-cover.jpg', video: 'assets/project-01.mp4', placeholder: false },
+    { title: 'Проект 02', category: '', description: '', url: '', image: 'assets/project-02-cover.jpg', video: 'assets/project-02.mp4', placeholder: false },
+    { title: 'Проект 03', category: 'Видеопроект', description: 'Версии для компьютера и телефона.', url: '', image: 'assets/project-03-cover.jpg', video: 'assets/project-03-desktop.mp4', mobileVideo: 'assets/project-03-mobile.mp4', placeholder: false }
   ],
 
   /* Добавляйте только настоящие отзывы, например:
