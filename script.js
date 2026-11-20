@@ -52,6 +52,27 @@
     draw();
   }
 
+  const contactSection = document.querySelector('#contact');
+  if (contactSection) {
+    let contactFrame = 0;
+    const updateContact = () => {
+      contactFrame = 0;
+      const rect = contactSection.getBoundingClientRect();
+      const progress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / (window.innerHeight * .7)));
+      contactSection.style.setProperty('--contact-light', progress);
+    };
+    const scheduleContact = () => { if (!contactFrame) contactFrame = requestAnimationFrame(updateContact); };
+    window.addEventListener('scroll', scheduleContact, { passive: true });
+    window.addEventListener('resize', scheduleContact);
+    updateContact();
+  }
+  document.querySelector('#contact-form')?.addEventListener('submit', event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const message = `Здравствуйте! Меня зовут ${form.elements.name.value.trim()}.\n\n${form.elements.message.value.trim()}`;
+    window.open(`https://t.me/Idriscode?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+  });
+
   const data = window.PORTFOLIO_CONTENT;
   if (!data || typeof data !== 'object') return;
   const clean = value => typeof value === 'string' ? value.trim() : '';

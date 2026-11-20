@@ -7,11 +7,11 @@
   <meta name="description" content="Личное портфолио: обо мне, избранные работы, отзывы и контакты.">
   <title>Портфолио — Идрис</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23171919'/%3E%3Cpath d='M20 47V17h15c8 0 12 4 12 11s-5 11-13 11h-6v8zm8-15h6c4 0 6-1 6-4s-2-4-6-4h-6z' fill='%23f1f1ec'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="stylesheet" href="styles.css?v=14">
   <link rel="stylesheet" href="services.css?v=9">
   <script>document.documentElement.classList.add('js'); if (location.hostname.endsWith('.github.io')) document.documentElement.classList.add('static-host');</script>
   <script src="content.js?v=7" defer></script>
-  <script src="script.js?v=19" defer></script>
+  <script src="script.js?v=20" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -104,9 +104,10 @@
       </section>
 
       <section class="section contact wrap" id="contact" aria-labelledby="contact-title">
+        <div class="contact-sphere-art" aria-hidden="true"><div class="portal-sphere"></div><div class="portal-orbit portal-orbit-one"></div><div class="portal-orbit portal-orbit-two"></div></div>
         <div class="section-kicker"><span>04 / СВЯЗЬ</span><span class="kicker-line"></span><span>ДАВАЙТЕ НАЧНЁМ</span></div>
         <div class="contact-layout"><div><div class="contact-overline"><span class="status-dot"></span> НА СВЯЗИ</div><h2 id="contact-title">Есть идея?<br><span class="muted-title">Давайте</span><br>обсудим<span class="period">.</span></h2></div>
-          <div class="contact-copy"><p>Расскажите о своей задаче, предложите сотрудничество или просто напишите пару слов.</p><div class="contact-details" id="contact-details"><span class="contact-label">ПОЧТА ДЛЯ СВЯЗИ</span><span class="contact-placeholder">Здесь будет ваш адрес <span aria-hidden="true">↗</span></span><small>Добавьте контактные данные, чтобы с вами могли связаться.</small></div></div>
+          <div class="contact-copy"><p>Расскажите о своей задаче, предложите сотрудничество или просто напишите пару слов.</p><form class="contact-form" id="contact-form"><label>Ваше имя<input name="name" required maxlength="80" autocomplete="name"></label><label>Расскажите о задаче<textarea name="message" required maxlength="1500" rows="4"></textarea></label><button type="submit">Написать в Telegram ↗</button><p>Откроется Telegram с подготовленным сообщением.</p></form><div class="contact-details" id="contact-details"><span class="contact-label">ПОЧТА ДЛЯ СВЯЗИ</span><span class="contact-placeholder">Здесь будет ваш адрес <span aria-hidden="true">↗</span></span><small>Добавьте контактные данные, чтобы с вами могли связаться.</small></div></div>
         </div>
       </section>
     </main>
