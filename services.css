@@ -78,3 +78,7 @@ body{background:rgb(calc(19 + 2 * var(--contact-light,0)) calc(21 + 3 * var(--co
 .contact,.faq,.footer{color:#f0f2ed}
 .contact .muted-title,.contact .contact-copy>p,.contact .contact-overline,.contact .contact-details,.contact .section-kicker,.contact .period{color:inherit}
 .contact-sphere-art{opacity:calc(.32 * var(--contact-light,0))}
+
+/* Fade the page towards the light grey used in the opening word. */
+body{background:rgb(calc(19 + 200 * var(--contact-light,0)) calc(21 + 202 * var(--contact-light,0)) calc(21 + 199 * var(--contact-light,0)))}
+.contact,.faq,.footer{--contrast-step:clamp(0,calc((var(--contact-light,0) - .38) * 50),1);color:rgb(calc(240 - 215 * var(--contrast-step)) calc(242 - 217 * var(--contrast-step)) calc(237 - 212 * var(--contrast-step)))}
