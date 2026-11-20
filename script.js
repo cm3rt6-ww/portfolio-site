@@ -23,7 +23,6 @@
     const glyph = portal.querySelector('.portal-glyph');
     const clip = portal.querySelector('#portal-clip');
     const ink = portal.querySelector('.portal-ink');
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
     let raf = 0;
     let focusX = 180;
     const measureGlyph = () => {
@@ -38,7 +37,7 @@
       raf = 0;
       const height = portal.querySelector('.portal-pin').offsetHeight;
       const travel = Math.max(1, portal.offsetHeight - height);
-      const progress = reduce.matches || motionPaused ? 0 : Math.max(0, Math.min(1, -portal.getBoundingClientRect().top / travel));
+      const progress = motionPaused ? 0 : Math.max(0, Math.min(1, -portal.getBoundingClientRect().top / travel));
       const t = Math.min(progress / .86, 1);
       const eased = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       const scale = Math.exp(Math.log(42) * eased);
@@ -52,7 +51,6 @@
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', () => { measureGlyph(); schedule(); });
     document.addEventListener('motion-change', schedule);
-    reduce.addEventListener?.('change', schedule);
     draw();
   }
 
@@ -180,7 +178,6 @@
     let lastFrame = 0;
     let inView = !('IntersectionObserver' in window);
     let hover = false;
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
     const mod = (number, count) => ((number % count) + count) % count;
     const showProject = (index, trigger) => {
       const project = projects[index];
@@ -305,7 +302,7 @@
       });
     }
     const animateBand = time => {
-      if (lastFrame && inView && !document.hidden && !motionPaused && !reduced.matches && !hover && !videoDialog.open) {
+      if (lastFrame && inView && !document.hidden && !motionPaused && !hover && !videoDialog.open) {
         position += Math.min(time - lastFrame, 100) / 2800;
         render();
       }
