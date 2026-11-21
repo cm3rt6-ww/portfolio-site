@@ -148,37 +148,31 @@
 
   const list = document.querySelector('#projects-list');
   const carousel = document.querySelector('.project-carousel');
-  const projectList = Array.isArray(data.projects) ? data.projects.filter(project => project && typeof project === 'object') : [];
-  const projects = [];
-  for (let left = 0, right = projectList.length - 1; left <= right; left++, right--) {
-    projects.push(projectList[left]);
-    if (left !== right) projects.push(projectList[right]);
-  }
+  const projects = Array.isArray(data.projects) ? data.projects.filter(project => project && typeof project === 'object') : [];
   if (list && carousel && projects.length) {
     list.replaceChildren();
-    list.classList.add('curved-projects');
-    list.setAttribute('aria-label', 'Лента проектов');
-    const band = el('div', 'curved-band');
-    band.setAttribute('aria-hidden', 'true');
-    list.append(band);
-    const picker = el('div', 'project-picker');
-    picker.setAttribute('aria-label', 'Выбрать проект');
-    const details = el('div', 'curved-details');
+    list.classList.add('stack-projects');
+    list.setAttribute('aria-label', 'Проекты. Используйте стрелки для переключения');
+    list.setAttribute('tabindex', '0');
     const controls = carousel.querySelector('.carousel-controls');
-    controls.hidden = true;
-    controls.before(picker, details);
-    const previews = projects.map(project => safeUrl(project.image));
-    let selected = 0;
-    let tiles = [];
-    let columns = 0;
-    let pitch = 0;
-    let radius = 0;
-    let limit = 0;
-    let position = 0;
-    let lastFrame = 0;
+    const count = controls.querySelector('.carousel-count');
+    const prevButton = controls.querySelector('.carousel-prev');
+    const nextButton = controls.querySelector('.carousel-next');
+    const dots = el('div', 'stack-dots');
+    dots.setAttribute('aria-label', 'Выбрать проект');
+    controls.insertBefore(dots, nextButton);
+    controls.hidden = false;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    let active = 0;
     let inView = !('IntersectionObserver' in window);
-    let hover = false;
-    const mod = (number, count) => ((number % count) + count) % count;
+    let hovering = false;
+    let focusInside = false;
+    let lastInteraction = 0;
+    let wheelTotal = 0;
+    let wheelTime = 0;
+    let pointer = null;
+    let suppressClick = false;
+    const wrap = index => (index + projects.length) % projects.length;
     const showProject = (index, trigger) => {
       const project = projects[index];
       const video = safeUrl(project.video);
@@ -186,136 +180,112 @@
       if (video) openVideo(project, trigger);
       else if (url) window.location.href = url;
     };
-    const selectProject = index => {
-      selected = mod(index, projects.length);
-      picker.querySelectorAll('button').forEach((button, i) => button.setAttribute('aria-pressed', String(i === selected)));
-      const project = projects[selected];
-      const title = el('h3', '', clean(project.title) || 'Без названия');
-      const description = el('p', '', clean(project.description));
-      const category = el('span', 'project-category', clean(project.category));
-      details.replaceChildren(category, title, description);
-      if (safeUrl(project.video) || safeUrl(project.url)) {
-        const open = el('button', 'curved-open', safeUrl(project.video) ? 'Смотреть проект ↗' : 'Открыть проект ↗');
-        open.type = 'button';
-        open.addEventListener('click', () => showProject(selected, open));
-        details.append(open);
+    const cards = projects.map((project, index) => {
+      const card = el('button', 'stack-card');
+      card.type = 'button';
+      const image = safeUrl(project.image);
+      if (image) {
+        const img = el('img', 'stack-image');
+        img.src = image;
+        img.alt = '';
+        img.draggable = false;
+        card.append(img);
       }
-    };
-    projects.forEach((project, index) => {
-      const button = el('button', 'project-picker-button', clean(project.title) || `Проект ${index + 1}`);
-      button.type = 'button';
-      button.addEventListener('click', () => selectProject(index));
-      picker.append(button);
-    });
-    selectProject(0);
-
-    // A single frame from each video is shared by all its facets.
-    projects.forEach((project, index) => {
-      const src = safeUrl(project.video);
-      if (previews[index] || !src) return;
-      const video = document.createElement('video');
-      video.preload = 'auto';
-      video.muted = true;
-      video.playsInline = true;
-      video.addEventListener('loadeddata', () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = 640;
-          canvas.height = Math.max(1, Math.round(640 * video.videoHeight / video.videoWidth));
-          canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-          previews[index] = canvas.toDataURL('image/jpeg', .78);
-          tiles.forEach(tile => { if (tile.projectIndex === index) paintTile(tile, index); });
-        } catch (_) { /* External videos can prohibit frame extraction. */ }
-        video.removeAttribute('src');
-        video.load();
-      }, { once: true });
-      video.src = src;
-      video.load();
-    });
-    function paintTile(tile, index) {
-      tile.projectIndex = index;
-      const image = previews[index];
-      tile.element.setAttribute('aria-label', clean(projects[index].title) || `Проект ${index + 1}`);
-      tile.slices.forEach(slice => {
-        slice.style.backgroundImage = image ? `url("${image.replace(/["\\]/g, '\\$&')}")` : '';
+      const caption = el('span', 'stack-caption');
+      caption.append(el('span', 'stack-category', clean(project.category) || 'ПРОЕКТ'), el('strong', 'stack-title', clean(project.title) || `Проект ${index + 1}`));
+      if (clean(project.description)) caption.append(el('span', 'stack-description', clean(project.description)));
+      card.append(caption);
+      card.addEventListener('click', () => {
+        if (suppressClick) { suppressClick = false; return; }
+        lastInteraction = Date.now();
+        if (index !== active) select(index);
+        else showProject(index, card);
       });
-    }
-    const bend = 80 * Math.PI / 180;
-    const arc = (1.6 - 1 + Math.cos(bend)) / (2 * 1.6 * Math.sin(bend));
-    const aspect = 16 / 9;
-    const slices = 16;
-    const measure = () => {
-      const width = list.clientWidth;
-      const height = list.clientHeight;
-      if (!width || !height) return;
-      const tileHeight = Math.min(height * .52, width * .55 / aspect);
-      radius = width * arc;
-      const unit = tileHeight / radius * 180 / Math.PI;
-      pitch = (aspect + .06) * unit;
-      limit = bend * 180 / Math.PI + aspect * unit / 2;
-      const count = Math.min(60, Math.max(2, Math.ceil(2 * limit / pitch) + 2));
-      list.style.setProperty('--curve-perspective', `${radius * 1.6}px`);
-      list.style.setProperty('--tile-width', `${tileHeight * aspect}px`);
-      list.style.setProperty('--tile-height', `${tileHeight}px`);
-      if (count !== columns) {
-        columns = count;
-        band.replaceChildren();
-        tiles = Array.from({ length: columns }, () => {
-          const element = el('button', 'curved-tile');
-          element.type = 'button';
-          element.tabIndex = -1;
-          const parts = Array.from({ length: slices }, (_, k) => {
-            const part = el('span', 'curved-slice');
-            element.append(part);
-            return part;
-          });
-          const tile = { element, slices: parts, projectIndex: -1 };
-          element.addEventListener('click', () => {
-            selectProject(tile.projectIndex);
-            showProject(tile.projectIndex, picker.children[tile.projectIndex]);
-          });
-          band.append(element);
-          return tile;
-        });
-      }
-      tiles.forEach(tile => tile.slices.forEach((part, k) => {
-        const share = aspect / slices;
-        const angle = (aspect / 2 - (k + .5) * share) * unit;
-        part.style.left = `${(aspect - share) / 2 / aspect * 100}%`;
-        part.style.width = `${100 / slices + 1}%`;
-        part.style.transform = `translateZ(${radius}px) rotateY(${angle}deg) translateZ(${-radius}px)`;
-        part.style.backgroundSize = `${slices * 100}% 100%`;
-        part.style.backgroundPosition = slices === 1 ? 'center' : `${k / (slices - 1) * 100}% center`;
-      }));
-      render();
-    };
-    function render() {
-      if (!columns) return;
-      const first = Math.floor(position - columns / 2);
-      tiles.forEach((tile, slot) => {
-        const cell = first + slot;
-        const angle = (cell - position) * pitch;
-        const index = mod(cell, projects.length);
-        if (tile.projectIndex !== index) paintTile(tile, index);
-        tile.element.style.visibility = Math.abs(angle) > limit ? 'hidden' : 'visible';
-        tile.element.style.transform = `translateZ(${radius}px) rotateY(${angle}deg) translateZ(${-radius}px)`;
+      list.append(card);
+      return card;
+    });
+    const dotButtons = projects.map((project, index) => {
+      const dot = el('button', 'stack-dot');
+      dot.type = 'button';
+      dot.setAttribute('aria-label', `Перейти к проекту ${clean(project.title) || index + 1}`);
+      dot.addEventListener('click', () => select(index));
+      dots.append(dot);
+      return dot;
+    });
+    function select(index, automatic = false) {
+      active = wrap(index);
+      if (!automatic) lastInteraction = Date.now();
+      cards.forEach((card, i) => {
+        let offset = i - active;
+        if (offset > projects.length / 2) offset -= projects.length;
+        if (offset < -projects.length / 2) offset += projects.length;
+        const distance = Math.abs(offset);
+        card.style.setProperty('--offset', offset);
+        card.style.setProperty('--distance', distance);
+        card.style.zIndex = String(10 - distance);
+        card.dataset.active = String(offset === 0);
+        card.setAttribute('aria-label', `${clean(projects[i].title) || `Проект ${i + 1}`}${offset === 0 ? ' — открыть' : ' — выбрать'}`);
+        card.tabIndex = offset === 0 ? 0 : -1;
+        dotButtons[i].setAttribute('aria-pressed', String(i === active));
       });
+      count.textContent = `${String(active + 1).padStart(2, '0')} / ${String(projects.length).padStart(2, '0')}`;
     }
-    const animateBand = time => {
-      if (lastFrame && inView && !document.hidden && !motionPaused && !hover && !videoDialog.open) {
-        position += Math.min(time - lastFrame, 100) / 2800;
-        render();
+    prevButton.addEventListener('click', () => select(active - 1));
+    nextButton.addEventListener('click', () => select(active + 1));
+    list.addEventListener('keydown', event => {
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        select(active + (event.key === 'ArrowRight' ? 1 : -1));
       }
-      lastFrame = time;
-      requestAnimationFrame(animateBand);
-    };
-    list.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') hover = true; });
-    list.addEventListener('pointerleave', () => { hover = false; });
-    if ('ResizeObserver' in window) new ResizeObserver(measure).observe(list);
-    else window.addEventListener('resize', measure);
+    });
+    list.addEventListener('wheel', event => {
+      if (event.ctrlKey || projects.length < 2) return;
+      const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+      if (!delta) return;
+      event.preventDefault();
+      const now = Date.now();
+      if (now - wheelTime > 450) wheelTotal = 0;
+      wheelTotal += delta * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 100 : 1);
+      if (Math.abs(wheelTotal) >= 40 && now - wheelTime > 300) {
+        select(active + (wheelTotal > 0 ? 1 : -1));
+        wheelTotal = 0;
+        wheelTime = now;
+      }
+    }, { passive: false });
+    list.addEventListener('pointerdown', event => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, dragging: false };
+      suppressClick = false;
+    });
+    list.addEventListener('pointermove', event => {
+      if (!pointer || pointer.id !== event.pointerId) return;
+      const dx = event.clientX - pointer.x;
+      const dy = event.clientY - pointer.y;
+      if (!pointer.dragging && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        pointer.dragging = true;
+        list.setPointerCapture(event.pointerId);
+      }
+    });
+    list.addEventListener('pointerup', event => {
+      if (!pointer || pointer.id !== event.pointerId) return;
+      const dx = event.clientX - pointer.x;
+      if (pointer.dragging) {
+        suppressClick = true;
+        if (Math.abs(dx) > 45) select(active + (dx < 0 ? 1 : -1));
+        window.setTimeout(() => { suppressClick = false; }, 0);
+      }
+      pointer = null;
+    });
+    list.addEventListener('pointercancel', () => { pointer = null; });
+    carousel.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') hovering = true; });
+    carousel.addEventListener('pointerleave', () => { hovering = false; });
+    carousel.addEventListener('focusin', () => { focusInside = true; });
+    carousel.addEventListener('focusout', event => { if (!carousel.contains(event.relatedTarget)) focusInside = false; });
     if ('IntersectionObserver' in window) new IntersectionObserver(entries => { inView = entries[0].isIntersecting; }, { threshold: .1 }).observe(list);
-    measure();
-    requestAnimationFrame(animateBand);
+    window.setInterval(() => {
+      if (projects.length > 1 && inView && !document.hidden && !motionPaused && !reduced.matches && !hovering && !focusInside && !videoDialog.open && Date.now() - lastInteraction > 5000) select(active + 1, true);
+    }, 3500);
+    select(0, true);
   }
 
   const playToggle = touchControls.querySelector('.video-play-toggle');
