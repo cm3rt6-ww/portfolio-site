@@ -96,3 +96,13 @@ body{background:rgb(calc(19 + 200 * var(--contact-light,0)) calc(21 + 202 * var(
 :root[data-motion=off] .stack-card,:root[data-motion=off] .stack-dot::after{transition:none}
 
 @media(max-width:380px){.carousel-controls{gap:4px}.carousel-controls>button{width:40px;height:40px}.carousel-count{min-width:42px;font-size:9px}.stack-dot{width:22px!important}}
+
+/* Telegram Mini App featured project */
+.miniapp-feature{display:flex;align-items:center;justify-content:space-between;gap:28px;margin-top:34px;padding:clamp(24px,4vw,42px);border:1px solid #414a43;border-radius:22px;background:radial-gradient(ellipse at 80% 50%,#5b745b30,transparent 55%),#1c211e}
+.miniapp-copy{max-width:570px}.miniapp-kicker{font-size:10px;letter-spacing:.14em;font-weight:700;color:#abb6ab}.miniapp-copy h3{margin:14px 0 10px;font-size:clamp(26px,3.5vw,42px);line-height:1.08;letter-spacing:-.045em;font-weight:500}.miniapp-copy h3 span{color:#aeb9ae}.miniapp-copy p{margin:0;color:#a4ada5;font-size:14px;line-height:1.7;max-width:460px}
+.miniapp-button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:24px;flex:none;min-height:58px;padding:0 13px 0 24px;border:1px solid #e7ece5;border-radius:999px;background:#e7ece5;color:#19201b;font-size:13px;font-weight:700;box-shadow:0 8px 24px #0003;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,background .25s;animation:miniapp-glow 3s ease-in-out infinite}
+.miniapp-button:hover{transform:translateY(-3px) scale(1.025);background:#fff;box-shadow:0 12px 30px #cbd9cb30}.miniapp-button:active{transform:scale(.97)}.miniapp-button:focus-visible{outline:2px solid #fff;outline-offset:5px}.miniapp-button-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#1c251e;color:#f3f5f1;font-size:17px;transition:transform .25s}.miniapp-button:hover .miniapp-button-icon{transform:rotate(45deg)}
+@keyframes miniapp-glow{0%,100%{box-shadow:0 8px 24px #0003,0 0 0 0 #dfe9df00}50%{box-shadow:0 8px 24px #0003,0 0 0 6px #dfe9df12}}
+@media(max-width:700px){.miniapp-feature{align-items:flex-start;flex-direction:column;gap:22px;margin-top:24px;padding:24px 20px}.miniapp-button{min-height:54px}}
+@media(prefers-reduced-motion:reduce){.miniapp-button{animation:none;transition:none}}
+:root[data-motion=off] .miniapp-button{animation:none;transition:none}
