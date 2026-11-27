@@ -8,7 +8,7 @@ window.PORTFOLIO_CONTENT = {
   /* Ссылку url и путь к изображению image можно указать позднее.
      Для реальных проектов измените placeholder на false. */
   projects: [
-    { title: 'Проект 01', category: 'Видеопроект', description: 'Посмотрите видео проекта.', url: '', image: 'assets/project-01-cover.jpg', video: 'assets/project-01.mp4', placeholder: false },
+    { title: 'Forma — виртуальные карты', category: 'Лендинг', description: 'Концепция сервиса виртуальных карт. Нажмите, чтобы открыть.', url: 'https://forma-cli.layero.app/', image: 'assets/forma-preview.jpg', video: '', placeholder: false },
     { title: 'Проект 02', category: '', description: '', url: '', image: 'assets/project-02-cover.jpg', video: 'assets/project-02.mp4', placeholder: false },
     { title: 'Поршень — автосервис', category: 'Лендинг', description: 'Сайт автосервиса. Нажмите, чтобы открыть.', url: 'https://porshen-auto.layero.app/', image: 'assets/porshen-preview.jpg', video: '', placeholder: false },
     { title: 'Проект 04', category: 'Видеопроект', description: '', url: '', image: 'assets/project-04-cover.jpg', video: 'assets/project-04.mp4', placeholder: false },
